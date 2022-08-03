@@ -20,8 +20,7 @@ class _MyHomePageState extends State<MyHomePage> {
           decoration: const BoxDecoration(
               image: DecorationImage(
                   fit: BoxFit.fill,
-                  image:
-                      AssetImage("lib/assets/images/background/margo2.jpg")))),
+                  image: AssetImage("assets/images/background/margo2.jpg")))),
       LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
         double width = MediaQuery.of(context).size.width;
@@ -57,7 +56,7 @@ class _MobileVerState extends State<MobileVer> {
               SizedBox(
                   height: 100,
                   child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -68,11 +67,13 @@ class _MobileVerState extends State<MobileVer> {
                             SizedBox(height: 5),
                             Text("All about movies.",
                                 textAlign: TextAlign.start,
-                                style: TextStyle(fontSize: 16))
+                                style: TextStyle(
+                                    fontSize: 16, fontFamily: "Nunito"))
                           ]))),
               // search bar
               Padding(
-                  padding: EdgeInsets.symmetric(vertical: 15, horizontal: 8),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 15, horizontal: 8),
                   child: Container(
                       constraints: const BoxConstraints(maxHeight: 42),
                       child: Row(
@@ -95,8 +96,10 @@ class _MobileVerState extends State<MobileVer> {
                                                 Radius.circular(20.0)))),
                                   ))),
                           CircleAvatar(
+                              radius: 25,
                               backgroundColor: Theme.of(context).primaryColor,
                               child: IconButton(
+                                  color: Colors.white,
                                   splashColor: Theme.of(context).primaryColor,
                                   splashRadius: 250,
                                   onPressed: () {
@@ -176,7 +179,7 @@ class _MobileVerState extends State<MobileVer> {
                       children: [
                         const Icon(Icons.movie_filter,
                             size: 70, color: Colors.black38),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         Text(message)
                       ]),
                 );
