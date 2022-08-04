@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:movie_app/model/movie_list.dart';
+import 'package:movie_app/model/popular_movies.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
@@ -31,7 +32,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-// mobile ver
+// mobile version
 class MobileVer extends StatefulWidget {
   const MobileVer({Key? key}) : super(key: key);
 
@@ -41,7 +42,9 @@ class MobileVer extends StatefulWidget {
 
 class _MobileVerState extends State<MobileVer> {
   String? inputSearch;
-  Movies? list;
+  Movies? searchResultMovies;
+  PopularMovies? popularMovies;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -63,8 +66,8 @@ class _MobileVerState extends State<MobileVer> {
                           children: const [
                             Text("MovieDi",
                                 textAlign: TextAlign.start,
-                                style: TextStyle(fontSize: 32)),
-                            SizedBox(height: 5),
+                                style: TextStyle(
+                                    fontSize: 32, fontWeight: FontWeight.bold)),
                             Text("All about movies.",
                                 textAlign: TextAlign.start,
                                 style: TextStyle(
@@ -80,12 +83,16 @@ class _MobileVerState extends State<MobileVer> {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          // text field
                           Expanded(
                               child: Padding(
                                   padding: const EdgeInsets.only(right: 8),
                                   child: TextField(
                                     onChanged: (String value) {
                                       inputSearch = value;
+                                    },
+                                    onSubmitted: (String value) {
+                                      searchAction(value);
                                     },
                                     decoration: const InputDecoration(
                                         hintText: "Search movie..",
@@ -95,6 +102,7 @@ class _MobileVerState extends State<MobileVer> {
                                             borderRadius: BorderRadius.all(
                                                 Radius.circular(20.0)))),
                                   ))),
+                          // btn search
                           CircleAvatar(
                               radius: 25,
                               backgroundColor: Theme.of(context).primaryColor,
@@ -103,112 +111,155 @@ class _MobileVerState extends State<MobileVer> {
                                   splashColor: Theme.of(context).primaryColor,
                                   splashRadius: 250,
                                   onPressed: () {
-                                    if (inputSearch != null) {
-                                      Movies.getMovies(inputSearch!)
-                                          .then((value) {
-                                        setState(() {
-                                          list = value;
-                                        });
-                                      });
-                                    }
+                                    print(inputSearch);
+                                    searchAction(inputSearch);
+                                    inputSearch = null;
                                   },
                                   icon: const Icon(Icons.search)))
                         ],
                       ))),
-              // list movie
+              // text
+              Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                  child: Text(
+                      searchResultMovies != null
+                          ? "Result for $inputSearch"
+                          : "Popular Movies",
+                      style: const TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.bold))),
+              // Movie
               Builder(builder: (BuildContext context) {
-                String message = "Cari Film";
-                if (list != null) {
-                  if (list!.movies != null) {
-                    return Expanded(
-                        child: GridView.count(
-                            childAspectRatio: 0.5,
-                            crossAxisCount: 2,
-                            children: list!.movies!.map((e) {
-                              return LayoutBuilder(builder:
-                                  (BuildContext context,
-                                      BoxConstraints constraints) {
-                                return Padding(
-                                    padding: const EdgeInsets.only(
-                                        top: 8, left: 8, right: 8, bottom: 20),
-                                    child: Container(
-                                        child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                          Container(
-                                              constraints: BoxConstraints(
-                                                  maxHeight:
-                                                      constraints.maxHeight *
-                                                          0.71),
-                                              child: ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(18),
-                                                  child: Image.network(
-                                                      e["Poster"],
-                                                      width:
-                                                          constraints.maxWidth,
-                                                      height: constraints
-                                                              .maxHeight *
-                                                          0.71,
-                                                      fit: BoxFit.cover))),
-                                          Text(
-                                              e["Title"].toString().length > 33
-                                                  ? "${e["Title"].toString().substring(0, 33)}..."
-                                                  : e["Title"].toString(),
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 15),
-                                              textAlign: TextAlign.center),
-                                          Text(e["Year"])
-                                        ])));
-                              });
-                            }).toList()));
-                  } else {
-                    list!.error != null
-                        ? message = list!.error!
-                        : message =
-                            "Koneksi ke database gagal! Periksa koneksi internet Anda.";
-                  }
+                if (searchResultMovies != null) {
+                  return searchMovies(searchResultMovies!);
+                } else {
+                  return getPopularMovies();
                 }
-
-                return SizedBox(
-                  height: 200,
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.movie_filter,
-                            size: 70, color: Colors.black38),
-                        const SizedBox(height: 10),
-                        Text(message)
-                      ]),
-                );
               })
             ]));
   }
 
-  // Widget getMovies(Movies? list) {
-  //   if (list != null) {
-  //     if (list.movies != null) {
-  //       print(list.response);
-  //       return GridView.count(
-  //         crossAxisCount: 2,
-  //         children: list.movies!.map((e) {
-  //           return Card(
-  //             child: Text(e["Title"].toString()),
-  //           );
-  //         }).toList(),
-  //       );
-  //     } else {
-  //       return Text(list.error != null
-  //           ? list.error!
-  //           : "Koneksi ke database gagal! Periksa koneksi internet Anda.");
-  //     }
-  //   } else {
-  //     return const SizedBox(
-  //       height: 200,
-  //       child: Center(child: Text("Cari Film")),
-  //     );
-  //   }
-  // }
+  void searchAction(String? keywordTitle) {
+    if (keywordTitle != null && keywordTitle != "") {
+      Movies.getMovies(keywordTitle).then((value) {
+        setState(() {
+          inputSearch = keywordTitle;
+          searchResultMovies = value;
+        });
+      });
+    } else {
+      setState(() {
+        searchResultMovies = null;
+      });
+    }
+  }
+
+  Widget getPopularMovies() {
+    String message = "Popular";
+
+    PopularMovies.getPopularMovies().then((value) {
+      popularMovies = value;
+      message = popularMovies!.error != null
+          ? popularMovies!.error!
+          : "Popular Movies";
+    });
+
+    if (popularMovies != null && popularMovies!.list != null) {
+      // list movies
+      return Expanded(
+          child: ListView.builder(
+              itemBuilder: (BuildContext context, int index) {
+                String url =
+                    "https://image.tmdb.org/t/p/w500/${popularMovies!.list![index]["backdrop_path"]}";
+                return Container(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
+                    constraints: const BoxConstraints(maxHeight: 90),
+                    child: Row(children: [
+                      // image
+                      ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(url, fit: BoxFit.cover)),
+                      const SizedBox(width: 10),
+                      // detail
+                      Expanded(
+                          child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                            Text(popularMovies!.list![index]["original_title"],
+                                style: const TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold)),
+                            Text(
+                                "${popularMovies!.list![index]["vote_average"]} vote",
+                                style: const TextStyle(
+                                    fontStyle: FontStyle.italic))
+                          ]))
+                    ]));
+              },
+              itemCount: popularMovies!.list!.length));
+    }
+
+    return movieIcon(message);
+  }
+
+  Widget searchMovies(Movies list) {
+    String message = "Cari Film";
+    if (list.movies != null) {
+      return Expanded(
+          child: GridView.count(
+              childAspectRatio: 0.5,
+              crossAxisCount: 2,
+              children: list.movies!.map((e) {
+                return LayoutBuilder(builder:
+                    (BuildContext context, BoxConstraints constraints) {
+                  return Padding(
+                      padding: const EdgeInsets.only(
+                          top: 8, left: 8, right: 8, bottom: 20),
+                      child: Container(
+                          child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                            Container(
+                                constraints: BoxConstraints(
+                                    maxHeight: constraints.maxHeight * 0.71),
+                                child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(18),
+                                    child: Image.network(e["Poster"],
+                                        width: constraints.maxWidth,
+                                        height: constraints.maxHeight * 0.71,
+                                        fit: BoxFit.cover))),
+                            Text(
+                                e["Title"].toString().length > 33
+                                    ? "${e["Title"].toString().substring(0, 33)}..."
+                                    : e["Title"].toString(),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 15),
+                                textAlign: TextAlign.center),
+                            Text(e["Year"])
+                          ])));
+                });
+              }).toList()));
+    } else if (list.error != null) {
+      message = list.error!;
+    }
+
+    return movieIcon(message);
+  }
+
+  Widget movieIcon(String message, {IconData? iconParam}) {
+    IconData icon = Icons.movie_filter;
+    if (iconParam != null) {
+      icon = iconParam;
+    }
+    return Expanded(
+        child: Container(
+            margin: const EdgeInsets.only(top: 0),
+            child:
+                Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Icon(icon, size: 70, color: Colors.black38),
+              const SizedBox(height: 10),
+              Text(message)
+            ])));
+  }
 }

@@ -8,7 +8,7 @@ class Movies {
 
   Movies({this.movies, this.response, this.error});
 
-  factory Movies.list(Map<String, dynamic> object) {
+  factory Movies.create(Map<String, dynamic> object) {
     return Movies(
         movies: object["Search"],
         response: object["Response"],
@@ -24,7 +24,7 @@ class Movies {
     var apiresult = await http.get(url);
     var jsonObject = convert.jsonDecode(apiresult.body) as Map<String, dynamic>;
     if (apiresult.statusCode == 200) {
-      return Movies.list(jsonObject);
+      return Movies.create(jsonObject);
     } else {
       return Movies(
           error: "Koneksi ke database gagal! from class Movies.",
