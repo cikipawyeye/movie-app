@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:movie_app/model/get_imdb_id.dart';
 import 'package:movie_app/model/movie_list.dart';
 import 'package:movie_app/model/popular_movies.dart';
+import 'package:movie_app/screen/detail.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
@@ -95,7 +97,8 @@ class _MobileVerState extends State<MobileVer> {
                                       searchAction(value);
                                     },
                                     decoration: const InputDecoration(
-                                        hintText: "Search movie..",
+                                        labelText: "Search movie",
+                                        hintText: "Avengers..",
                                         contentPadding: EdgeInsets.symmetric(
                                             vertical: 0, horizontal: 20),
                                         border: OutlineInputBorder(
@@ -171,36 +174,54 @@ class _MobileVerState extends State<MobileVer> {
               itemBuilder: (BuildContext context, int index) {
                 String url =
                     "https://image.tmdb.org/t/p/w500/${popularMovies!.list![index]["backdrop_path"]}";
-                return Container(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
-                    constraints: const BoxConstraints(maxHeight: 90),
-                    child: Row(children: [
-                      // image
-                      ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.network(url, fit: BoxFit.cover)),
-                      const SizedBox(width: 10),
-                      // detail
-                      Expanded(
-                          child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                            Text(popularMovies!.list![index]["original_title"],
-                                style: const TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.bold)),
-                            Text(
-                                "${popularMovies!.list![index]["vote_average"]} vote",
-                                style: const TextStyle(
-                                    fontStyle: FontStyle.italic))
-                          ]))
-                    ]));
+                String imdbId = popularMovies!.list![index]["id"].toString();
+
+                ImdbId.getImdbIdOf(popularMovies!.list![index]["id"])
+                    .then((value) {
+                  imdbId = value.imdbId!;
+                }).whenComplete(() => Detail(imdbId));
+
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
+                      return Detail(imdbId);
+                    }));
+                  },
+                  child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 5, horizontal: 8),
+                      constraints: const BoxConstraints(maxHeight: 90),
+                      child: Row(children: [
+                        // image
+                        ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.network(url, fit: BoxFit.cover)),
+                        const SizedBox(width: 10),
+                        // detail
+                        Expanded(
+                            child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                              Text(
+                                  popularMovies!.list![index]["original_title"],
+                                  style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold)),
+                              Text(
+                                  "${popularMovies!.list![index]["vote_average"]} vote",
+                                  style: const TextStyle(
+                                      fontStyle: FontStyle.italic))
+                            ]))
+                      ])),
+                );
               },
               itemCount: popularMovies!.list!.length));
     }
 
-    return movieIcon(message);
+    return bgMovieIcon(message);
   }
 
   Widget searchMovies(Movies list) {
@@ -213,41 +234,50 @@ class _MobileVerState extends State<MobileVer> {
               children: list.movies!.map((e) {
                 return LayoutBuilder(builder:
                     (BuildContext context, BoxConstraints constraints) {
-                  return Padding(
-                      padding: const EdgeInsets.only(
-                          top: 8, left: 8, right: 8, bottom: 20),
-                      child: Container(
-                          child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                            Container(
-                                constraints: BoxConstraints(
-                                    maxHeight: constraints.maxHeight * 0.71),
-                                child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(18),
-                                    child: Image.network(e["Poster"],
-                                        width: constraints.maxWidth,
-                                        height: constraints.maxHeight * 0.71,
-                                        fit: BoxFit.cover))),
-                            Text(
-                                e["Title"].toString().length > 33
-                                    ? "${e["Title"].toString().substring(0, 33)}..."
-                                    : e["Title"].toString(),
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 15),
-                                textAlign: TextAlign.center),
-                            Text(e["Year"])
-                          ])));
+                  return InkWell(
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => Detail(e["imdbID"])));
+                      },
+                      child: Padding(
+                          padding: const EdgeInsets.only(
+                              top: 8, left: 8, right: 8, bottom: 20),
+                          child: Container(
+                              child: Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                Container(
+                                    constraints: BoxConstraints(
+                                        maxHeight:
+                                            constraints.maxHeight * 0.71),
+                                    child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(18),
+                                        child: Image.network(e["Poster"],
+                                            width: constraints.maxWidth,
+                                            height:
+                                                constraints.maxHeight * 0.71,
+                                            fit: BoxFit.cover))),
+                                Text(
+                                    e["Title"].toString().length > 33
+                                        ? "${e["Title"].toString().substring(0, 33)}..."
+                                        : e["Title"].toString(),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15),
+                                    textAlign: TextAlign.center),
+                                Text(e["Year"])
+                              ]))));
                 });
               }).toList()));
     } else if (list.error != null) {
       message = list.error!;
     }
 
-    return movieIcon(message);
+    return bgMovieIcon(message);
   }
 
-  Widget movieIcon(String message, {IconData? iconParam}) {
+  Widget bgMovieIcon(String message, {IconData? iconParam}) {
     IconData icon = Icons.movie_filter;
     if (iconParam != null) {
       icon = iconParam;

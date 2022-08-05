@@ -1,4 +1,4 @@
-# movie_app
+# MovieDi
 
 A simple movie information app created using Flutter.
 
