@@ -1,19 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:movie_app/model/get_imdb_id.dart';
 import 'package:movie_app/model/movie_list.dart';
 import 'package:movie_app/model/popular_movies.dart';
 import 'package:movie_app/screen/detail.dart';
 
-class MyHomePage extends StatefulWidget {
+class MyHomePage extends StatelessWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,17 +29,8 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 // mobile version
-class MobileVer extends StatefulWidget {
+class MobileVer extends StatelessWidget {
   const MobileVer({Key? key}) : super(key: key);
-
-  @override
-  State<StatefulWidget> createState() => _MobileVerState();
-}
-
-class _MobileVerState extends State<MobileVer> {
-  String? inputSearch;
-  Movies? searchResultMovies;
-  PopularMovies? popularMovies;
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +38,6 @@ class _MobileVerState extends State<MobileVer> {
         padding: const EdgeInsets.symmetric(horizontal: 10),
         child: Column(
             // all page
-            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -75,71 +59,98 @@ class _MobileVerState extends State<MobileVer> {
                                 style: TextStyle(
                                     fontSize: 16, fontFamily: "Nunito"))
                           ]))),
-              // search bar
-              Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 15, horizontal: 8),
-                  child: Container(
-                      constraints: const BoxConstraints(maxHeight: 42),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // text field
-                          Expanded(
-                              child: Padding(
-                                  padding: const EdgeInsets.only(right: 8),
-                                  child: TextField(
-                                    onChanged: (String value) {
-                                      inputSearch = value;
-                                    },
-                                    onSubmitted: (String value) {
-                                      searchAction(value);
-                                    },
-                                    decoration: const InputDecoration(
-                                        labelText: "Search movie",
-                                        hintText: "Avengers..",
-                                        contentPadding: EdgeInsets.symmetric(
-                                            vertical: 0, horizontal: 20),
-                                        border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(20.0)))),
-                                  ))),
-                          // btn search
-                          CircleAvatar(
-                              radius: 25,
-                              backgroundColor: Theme.of(context).primaryColor,
-                              child: IconButton(
-                                  color: Colors.white,
-                                  splashColor: Theme.of(context).primaryColor,
-                                  splashRadius: 250,
-                                  onPressed: () {
-                                    print(inputSearch);
-                                    searchAction(inputSearch);
-                                    inputSearch = null;
-                                  },
-                                  icon: const Icon(Icons.search)))
-                        ],
-                      ))),
-              // text
-              Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-                  child: Text(
-                      searchResultMovies != null
-                          ? "Result for $inputSearch"
-                          : "Popular Movies",
-                      style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold))),
-              // Movie
-              Builder(builder: (BuildContext context) {
-                if (searchResultMovies != null) {
-                  return searchMovies(searchResultMovies!);
-                } else {
-                  return getPopularMovies();
-                }
-              })
+              const MobileVerContent()
             ]));
+  }
+}
+
+class MobileVerContent extends StatefulWidget {
+  const MobileVerContent({Key? key}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => _MobileVerState();
+}
+
+class _MobileVerState extends State<MobileVerContent> {
+  String? inputSearch;
+  Movies? searchResultMovies;
+  PopularMovies? popularMovies;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(
+          // all page
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // search bar
+            Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 15, horizontal: 8),
+                child: Container(
+                    constraints: const BoxConstraints(maxHeight: 42),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // text field
+                        Expanded(
+                            child: Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: TextField(
+                                  onChanged: (String value) {
+                                    inputSearch = value;
+                                  },
+                                  onSubmitted: (String value) {
+                                    searchAction(value);
+                                  },
+                                  decoration: const InputDecoration(
+                                      labelText: "Search movie",
+                                      hintText: "Avengers..",
+                                      contentPadding: EdgeInsets.symmetric(
+                                          vertical: 0, horizontal: 20),
+                                      border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(20.0)))),
+                                ))),
+                        // btn search
+                        CircleAvatar(
+                            radius: 25,
+                            backgroundColor: Theme.of(context).primaryColor,
+                            child: IconButton(
+                                color: Colors.white,
+                                splashColor: Theme.of(context).primaryColor,
+                                splashRadius: 250,
+                                onPressed: () {
+                                  print(inputSearch);
+                                  searchAction(inputSearch);
+                                  inputSearch = null;
+                                },
+                                icon: const Icon(Icons.search)))
+                      ],
+                    ))),
+            // text
+            Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                child: Text(
+                    searchResultMovies != null
+                        ? "Result for $inputSearch"
+                        : "Popular Movies",
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold))),
+            // Movie
+            Builder(builder: (BuildContext context) {
+              if (searchResultMovies != null) {
+                return searchMovies(searchResultMovies!);
+              } else {
+                return getPopularMovies();
+              }
+            })
+          ]),
+    );
   }
 
   void searchAction(String? keywordTitle) {
@@ -160,11 +171,14 @@ class _MobileVerState extends State<MobileVer> {
   Widget getPopularMovies() {
     String message = "Popular";
 
+    // waiting data
     PopularMovies.getPopularMovies().then((value) {
-      popularMovies = value;
-      message = popularMovies!.error != null
-          ? popularMovies!.error!
-          : "Popular Movies";
+      setState(() {
+        popularMovies = value;
+        message = popularMovies!.error != null
+            ? popularMovies!.error!
+            : "Popular Movies";
+      });
     });
 
     if (popularMovies != null && popularMovies!.list != null) {
@@ -172,20 +186,16 @@ class _MobileVerState extends State<MobileVer> {
       return Expanded(
           child: ListView.builder(
               itemBuilder: (BuildContext context, int index) {
-                String url =
+                String imageUrl =
                     "https://image.tmdb.org/t/p/w500/${popularMovies!.list![index]["backdrop_path"]}";
-                String imdbId = popularMovies!.list![index]["id"].toString();
-
-                ImdbId.getImdbIdOf(popularMovies!.list![index]["id"])
-                    .then((value) {
-                  imdbId = value.imdbId!;
-                }).whenComplete(() => Detail(imdbId));
 
                 return InkWell(
                   onTap: () {
                     Navigator.push(context,
                         MaterialPageRoute(builder: (context) {
-                      return Detail(imdbId);
+                      return Detail(
+                          popularMovies!.list![index]["id"].toString(),
+                          isImdbId: false);
                     }));
                   },
                   child: Container(
@@ -196,7 +206,7 @@ class _MobileVerState extends State<MobileVer> {
                         // image
                         ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            child: Image.network(url, fit: BoxFit.cover)),
+                            child: Image.network(imageUrl, fit: BoxFit.cover)),
                         const SizedBox(width: 10),
                         // detail
                         Expanded(
@@ -211,7 +221,7 @@ class _MobileVerState extends State<MobileVer> {
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold)),
                               Text(
-                                  "${popularMovies!.list![index]["vote_average"]} vote",
+                                  "${popularMovies!.list![index]["vote_average"]}/10 vote",
                                   style: const TextStyle(
                                       fontStyle: FontStyle.italic))
                             ]))
