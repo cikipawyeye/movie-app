@@ -7,7 +7,7 @@ class Detail extends StatefulWidget {
   final String idMovie;
   final bool? isImdbId;
 
-  Detail(this.idMovie, {Key? key, this.isImdbId}) : super(key: key);
+  const Detail(this.idMovie, {Key? key, this.isImdbId}) : super(key: key);
 
   @override
   State<Detail> createState() => _DetailState();
@@ -30,8 +30,6 @@ class _DetailState extends State<Detail> {
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-
     if (movie == null) {
       if (widget.isImdbId != null && !widget.isImdbId!) {
         ImdbId.getImdbIdOf(int.parse(widget.idMovie)).then((value) {
@@ -45,6 +43,300 @@ class _DetailState extends State<Detail> {
 
     genre = movie!.detail!["Genre"].toString().split(", ");
 
+    return content();
+  }
+
+  Widget movieAttribute() {
+    Size size = MediaQuery.of(context).size;
+    double padding = 50;
+    double fontSize = 14;
+    if (size.width > 700) {
+      padding = 5;
+      fontSize = 17;
+    }
+    if (size.width > 1000) {
+      padding = 150;
+    }
+    if (size.width > 1200) {
+      padding = 200;
+      fontSize = 19;
+    }
+    if (size.width > 1400) {
+      padding = 300;
+    }
+    if (size.width > 700) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: padding),
+        child: Column(
+          children: [
+            // movie title
+            Padding(
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                child: Text(movie!.detail!["Title"],
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: fontSize + 8, fontWeight: FontWeight.bold))),
+            Row(children: [
+              // poster
+              Expanded(
+                  child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        constraints:
+                            BoxConstraints(maxHeight: size.height * 0.5),
+                        child: Center(
+                            child: ClipRRect(
+                                borderRadius: BorderRadius.circular(20),
+                                child: Image.network(
+                                  movie!.detail!["Poster"],
+                                  fit: BoxFit.contain,
+                                ))),
+                      ))),
+              Expanded(
+                  child: Center(
+                      child: Column(children: [
+                // rating
+                Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 18.0),
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            movie!.detail!["Rated"],
+                            style: TextStyle(fontSize: fontSize + 2),
+                          ),
+                          const SizedBox(width: 40),
+                          Row(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.star,
+                                    color: Colors.amber, size: 25),
+                                Text(
+                                  movie!.detail!["imdbRating"],
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: fontSize + 6),
+                                ),
+                                Text("/10",
+                                    style: TextStyle(fontSize: fontSize - 2)),
+                              ])
+                        ])),
+                // genre
+                Builder(builder: (context) {
+                  if (genre!.length < 5) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: genre!.map((e) {
+                        return Padding(
+                          padding: const EdgeInsets.all(5.0),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                                color: Colors.black12,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(6),
+                                  child: Text(e,
+                                      style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: fontSize - 2)),
+                                )),
+                          ),
+                        );
+                      }).toList(),
+                    );
+                  } else {
+                    return Column(
+                      children: genre!.map((e) {
+                        return Padding(
+                          padding: const EdgeInsets.all(5.0),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                                color: Colors.black12,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(6),
+                                  child: Text(e,
+                                      style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: fontSize - 2)),
+                                )),
+                          ),
+                        );
+                      }).toList(),
+                    );
+                  }
+                }),
+                // like
+                Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 18.0),
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          LikeButton(),
+                          SizedBox(width: 22),
+                          Icon(Icons.share)
+                        ]))
+              ])))
+            ]),
+          ],
+        ),
+      );
+    } else if (size.width < 325) {
+      return Column(mainAxisSize: MainAxisSize.min, children: [
+        // poster
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Container(
+            constraints: BoxConstraints(maxHeight: size.height * 0.5),
+            child: Center(
+              child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.network(
+                    movie!.detail!["Poster"],
+                    fit: BoxFit.contain,
+                  )),
+            ),
+          ),
+        ),
+        // movie title
+        Padding(
+            padding: const EdgeInsets.only(top: 8, bottom: 18),
+            child: Text(movie!.detail!["Title"],
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontSize: 22, fontWeight: FontWeight.bold))),
+        // genre
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: genre!.map((e) {
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                    color: Colors.black12,
+                    child: Padding(
+                      padding: const EdgeInsets.all(6),
+                      child:
+                          Text(e, style: const TextStyle(color: Colors.black)),
+                    )),
+              ),
+            );
+          }).toList(),
+        ),
+        // rating
+        Padding(
+            padding: const EdgeInsets.symmetric(vertical: 18.0),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Text(
+                movie!.detail!["Rated"],
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.star, color: Colors.amber, size: 25),
+                    Text(
+                      movie!.detail!["imdbRating"],
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 20),
+                    ),
+                    const Text("/10"),
+                  ]),
+              const LikeButton(),
+              const Icon(Icons.share)
+            ]))
+      ]);
+    } else {
+      return Column(mainAxisSize: MainAxisSize.min, children: [
+        // poster
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Container(
+            constraints: BoxConstraints(maxHeight: size.height * 0.5),
+            child: Center(
+              child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.network(
+                    movie!.detail!["Poster"],
+                    fit: BoxFit.contain,
+                  )),
+            ),
+          ),
+        ),
+        // movie title
+        Padding(
+            padding: const EdgeInsets.only(top: 8, bottom: 18),
+            child: Text(movie!.detail!["Title"],
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontSize: 22, fontWeight: FontWeight.bold))),
+        // genre
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: genre!.map((e) {
+            return ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                  color: Colors.black12,
+                  child: Padding(
+                    padding: const EdgeInsets.all(6),
+                    child: Text(e, style: const TextStyle(color: Colors.black)),
+                  )),
+            );
+          }).toList(),
+        ),
+        // rating
+        Padding(
+            padding: const EdgeInsets.symmetric(vertical: 18.0),
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  const LikeButton(),
+                  Text(
+                    movie!.detail!["Rated"],
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.star, color: Colors.amber, size: 25),
+                        Text(
+                          movie!.detail!["imdbRating"],
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 20),
+                        ),
+                        const Text("/10"),
+                      ]),
+                  const Icon(Icons.share)
+                ]))
+      ]);
+    }
+  }
+
+  Scaffold content() {
+    Size size = MediaQuery.of(context).size;
+    double padding = 50;
+    double fontSize = 14;
+    if (size.width > 700) {
+      padding = 150;
+      fontSize = 17;
+    }
+    if (size.width > 1000) {
+      padding = 200;
+    }
+    if (size.width > 1200) {
+      padding = 300;
+      fontSize = 19;
+    }
+    if (size.width > 1400) {
+      padding = 450;
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Detail Movie"),
@@ -57,76 +349,11 @@ class _DetailState extends State<Detail> {
           child: ListView(
               // crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // poster
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    constraints: BoxConstraints(maxHeight: size.height * 0.5),
-                    child: Center(
-                      child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: Image.network(
-                            movie!.detail!["Poster"],
-                            fit: BoxFit.contain,
-                          )),
-                    ),
-                  ),
-                ),
-                // movie title
-                Padding(
-                    padding: const EdgeInsets.only(top: 8, bottom: 18),
-                    child: Text(movie!.detail!["Title"],
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            fontSize: 22, fontWeight: FontWeight.bold))),
-                // genre
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: genre!.map((e) {
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                          color: Colors.black12,
-                          child: Padding(
-                            padding: const EdgeInsets.all(6),
-                            child: Text(e,
-                                style: const TextStyle(color: Colors.black)),
-                          )),
-                    );
-                  }).toList(),
-                ),
-                // rating
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 18.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      const LikeButton(),
-                      Text(
-                        movie!.detail!["Rated"],
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      Row(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.star,
-                                color: Colors.amber, size: 25),
-                            Text(
-                              movie!.detail!["imdbRating"],
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 20),
-                            ),
-                            const Text("/10"),
-                          ]),
-                      const Icon(Icons.share)
-                    ],
-                  ),
-                ),
+                movieAttribute(),
                 Container(
                   color: const Color.fromARGB(31, 189, 189, 189),
-                  padding: const EdgeInsets.only(
-                      left: 50, right: 50, bottom: 80, top: 35),
+                  padding: EdgeInsets.only(
+                      left: padding, right: padding, bottom: 80, top: 35),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -135,81 +362,135 @@ class _DetailState extends State<Detail> {
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Expanded(child: Text("Released")),
-                            const Expanded(child: Text(" : ")),
-                            Expanded(child: Text(movie!.detail!["Released"])),
+                            Expanded(
+                                child: Text("Released",
+                                    style: TextStyle(fontSize: fontSize))),
+                            Expanded(
+                                child: Text(" : ",
+                                    style: TextStyle(fontSize: fontSize))),
+                            Expanded(
+                                child: Text(movie!.detail!["Released"],
+                                    style: TextStyle(fontSize: fontSize))),
                           ]),
                       const SizedBox(height: 10),
                       Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Expanded(child: Text("Runtime")),
-                            const Expanded(child: Text(" : ")),
-                            Expanded(child: Text(movie!.detail!["Runtime"])),
+                            Expanded(
+                                child: Text("Runtime",
+                                    style: TextStyle(fontSize: fontSize))),
+                            Expanded(
+                                child: Text(" : ",
+                                    style: TextStyle(fontSize: fontSize))),
+                            Expanded(
+                                child: Text(movie!.detail!["Runtime"],
+                                    style: TextStyle(fontSize: fontSize))),
                           ]),
                       const SizedBox(height: 10),
                       Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Expanded(child: Text("Director")),
-                            const Expanded(child: Text(" : ")),
-                            Expanded(child: Text(movie!.detail!["Director"])),
+                            Expanded(
+                                child: Text("Director",
+                                    style: TextStyle(fontSize: fontSize))),
+                            Expanded(
+                                child: Text(" : ",
+                                    style: TextStyle(fontSize: fontSize))),
+                            Expanded(
+                                child: Text(movie!.detail!["Director"],
+                                    style: TextStyle(fontSize: fontSize))),
                           ]),
                       const SizedBox(height: 10),
                       Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Expanded(child: Text("Writer")),
-                            const Expanded(child: Text(" : ")),
-                            Expanded(child: Text(movie!.detail!["Writer"])),
+                            Expanded(
+                                child: Text("Writer",
+                                    style: TextStyle(fontSize: fontSize))),
+                            Expanded(
+                                child: Text(" : ",
+                                    style: TextStyle(fontSize: fontSize))),
+                            Expanded(
+                                child: Text(movie!.detail!["Writer"],
+                                    style: TextStyle(fontSize: fontSize))),
                           ]),
                       const SizedBox(height: 10),
                       Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Expanded(child: Text("Actors")),
-                            const Expanded(child: Text(" : ")),
-                            Expanded(child: Text(movie!.detail!["Actors"])),
+                            Expanded(
+                                child: Text("Actors",
+                                    style: TextStyle(fontSize: fontSize))),
+                            Expanded(
+                                child: Text(" : ",
+                                    style: TextStyle(fontSize: fontSize))),
+                            Expanded(
+                                child: Text(movie!.detail!["Actors"],
+                                    style: TextStyle(fontSize: fontSize))),
                           ]),
                       const SizedBox(height: 10),
                       Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Expanded(child: Text("Language")),
-                            const Expanded(child: Text(" : ")),
-                            Expanded(child: Text(movie!.detail!["Language"])),
+                            Expanded(
+                                child: Text("Language",
+                                    style: TextStyle(fontSize: fontSize))),
+                            Expanded(
+                                child: Text(" : ",
+                                    style: TextStyle(fontSize: fontSize))),
+                            Expanded(
+                                child: Text(movie!.detail!["Language"],
+                                    style: TextStyle(fontSize: fontSize))),
                           ]),
                       const SizedBox(height: 10),
                       Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Expanded(child: Text("Writer")),
-                            const Expanded(child: Text(" : ")),
-                            Expanded(child: Text(movie!.detail!["Writer"])),
+                            Expanded(
+                                child: Text("Writer",
+                                    style: TextStyle(fontSize: fontSize))),
+                            Expanded(
+                                child: Text(" : ",
+                                    style: TextStyle(fontSize: fontSize))),
+                            Expanded(
+                                child: Text(movie!.detail!["Writer"],
+                                    style: TextStyle(fontSize: fontSize))),
                           ]),
                       const SizedBox(height: 10),
                       Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Expanded(child: Text("Country")),
-                            const Expanded(child: Text(" : ")),
-                            Expanded(child: Text(movie!.detail!["Country"])),
+                            Expanded(
+                                child: Text("Country",
+                                    style: TextStyle(fontSize: fontSize))),
+                            Expanded(
+                                child: Text(" : ",
+                                    style: TextStyle(fontSize: fontSize))),
+                            Expanded(
+                                child: Text(movie!.detail!["Country"],
+                                    style: TextStyle(fontSize: fontSize))),
                           ]),
                       const SizedBox(height: 10),
                       Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Expanded(child: Text("Awards")),
-                            const Expanded(child: Text(" : ")),
-                            Expanded(child: Text(movie!.detail!["Awards"])),
+                            Expanded(
+                                child: Text("Awards",
+                                    style: TextStyle(fontSize: fontSize))),
+                            Expanded(
+                                child: Text(" : ",
+                                    style: TextStyle(fontSize: fontSize))),
+                            Expanded(
+                                child: Text(movie!.detail!["Awards"],
+                                    style: TextStyle(fontSize: fontSize))),
                           ])
                     ],
                   ),
@@ -243,8 +524,13 @@ class _DetailState extends State<Detail> {
                     ),
                   ),
                   Container(
-                      padding: const EdgeInsets.all(14),
-                      child: Text(plot, textAlign: TextAlign.center))
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 14, horizontal: 40),
+                      child: Text(
+                        plot,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: fontSize),
+                      ))
                 ]));
           },
         )
