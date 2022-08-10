@@ -327,21 +327,21 @@ class _DetailState extends State<Detail> {
   // movie description
   Scaffold content() {
     Size size = MediaQuery.of(context).size;
-    double padding = 50;
+    double padding = 40;
     double fontSize = 14;
     if (size.width > 700) {
-      padding = 150;
+      padding = 70;
       fontSize = 17;
     }
     if (size.width > 1000) {
-      padding = 200;
+      padding = 110;
     }
     if (size.width > 1200) {
-      padding = 300;
+      padding = 160;
       fontSize = 19;
     }
     if (size.width > 1400) {
-      padding = 450;
+      padding = 200;
     }
 
     return Scaffold(
