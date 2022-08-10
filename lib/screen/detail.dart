@@ -4,48 +4,48 @@ import 'package:movie_app/model/movie.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class Detail extends StatefulWidget {
-  final String idMovie;
+  final String _idMovie;
   final bool? isImdbId;
 
-  const Detail(this.idMovie, {Key? key, this.isImdbId}) : super(key: key);
+  const Detail(this._idMovie, {Key? key, this.isImdbId}) : super(key: key);
 
   @override
   State<Detail> createState() => _DetailState();
 }
 
 class _DetailState extends State<Detail> {
-  Movie? movie;
-  List<String>? genre;
+  Movie? _movie;
+  List<String>? _genre;
 
   final PanelController _panelController = PanelController();
 
   void getDetail(String id) {
     Movie.getDetailMovie(id).then((value) {
       setState(() {
-        movie = value;
+        _movie = value;
       });
-      print(movie!.detail!["Title"]);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (movie == null) {
+    if (_movie == null) {
       if (widget.isImdbId != null && !widget.isImdbId!) {
-        ImdbId.getImdbIdOf(int.parse(widget.idMovie)).then((value) {
+        ImdbId.getImdbIdOf(int.parse(widget._idMovie)).then((value) {
           getDetail(value.imdbId!);
         });
       } else {
-        getDetail(widget.idMovie);
+        getDetail(widget._idMovie);
       }
       return const Scaffold(body: Center(child: Text("Loading data...")));
     }
 
-    genre = movie!.detail!["Genre"].toString().split(", ");
+    _genre = _movie!.detail!["Genre"].toString().split(", ");
 
     return content();
   }
 
+  // rating, genre, btn like & share
   Widget movieAttribute() {
     Size size = MediaQuery.of(context).size;
     double padding = 50;
@@ -64,6 +64,8 @@ class _DetailState extends State<Detail> {
     if (size.width > 1400) {
       padding = 300;
     }
+
+    // screen dpi above 700
     if (size.width > 700) {
       return Padding(
         padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: padding),
@@ -72,7 +74,7 @@ class _DetailState extends State<Detail> {
             // movie title
             Padding(
                 padding: const EdgeInsets.symmetric(vertical: 18),
-                child: Text(movie!.detail!["Title"],
+                child: Text(_movie!.detail!["Title"],
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontSize: fontSize + 8, fontWeight: FontWeight.bold))),
@@ -88,7 +90,7 @@ class _DetailState extends State<Detail> {
                             child: ClipRRect(
                                 borderRadius: BorderRadius.circular(20),
                                 child: Image.network(
-                                  movie!.detail!["Poster"],
+                                  _movie!.detail!["Poster"],
                                   fit: BoxFit.contain,
                                 ))),
                       ))),
@@ -102,7 +104,7 @@ class _DetailState extends State<Detail> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            movie!.detail!["Rated"],
+                            _movie!.detail!["Rated"],
                             style: TextStyle(fontSize: fontSize + 2),
                           ),
                           const SizedBox(width: 40),
@@ -113,7 +115,7 @@ class _DetailState extends State<Detail> {
                                 const Icon(Icons.star,
                                     color: Colors.amber, size: 25),
                                 Text(
-                                  movie!.detail!["imdbRating"],
+                                  _movie!.detail!["imdbRating"],
                                   style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: fontSize + 6),
@@ -124,10 +126,10 @@ class _DetailState extends State<Detail> {
                         ])),
                 // genre
                 Builder(builder: (context) {
-                  if (genre!.length < 5) {
+                  if (_genre!.length < 5) {
                     return Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: genre!.map((e) {
+                      children: _genre!.map((e) {
                         return Padding(
                           padding: const EdgeInsets.all(5.0),
                           child: ClipRRect(
@@ -147,7 +149,7 @@ class _DetailState extends State<Detail> {
                     );
                   } else {
                     return Column(
-                      children: genre!.map((e) {
+                      children: _genre!.map((e) {
                         return Padding(
                           padding: const EdgeInsets.all(5.0),
                           child: ClipRRect(
@@ -182,6 +184,8 @@ class _DetailState extends State<Detail> {
           ],
         ),
       );
+
+      // screen dpi under 325
     } else if (size.width < 325) {
       return Column(mainAxisSize: MainAxisSize.min, children: [
         // poster
@@ -193,7 +197,7 @@ class _DetailState extends State<Detail> {
               child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
                   child: Image.network(
-                    movie!.detail!["Poster"],
+                    _movie!.detail!["Poster"],
                     fit: BoxFit.contain,
                   )),
             ),
@@ -202,14 +206,14 @@ class _DetailState extends State<Detail> {
         // movie title
         Padding(
             padding: const EdgeInsets.only(top: 8, bottom: 18),
-            child: Text(movie!.detail!["Title"],
+            child: Text(_movie!.detail!["Title"],
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                     fontSize: 22, fontWeight: FontWeight.bold))),
         // genre
         Column(
           mainAxisSize: MainAxisSize.min,
-          children: genre!.map((e) {
+          children: _genre!.map((e) {
             return Padding(
               padding: const EdgeInsets.all(8.0),
               child: ClipRRect(
@@ -230,7 +234,7 @@ class _DetailState extends State<Detail> {
             padding: const EdgeInsets.symmetric(vertical: 18.0),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               Text(
-                movie!.detail!["Rated"],
+                _movie!.detail!["Rated"],
                 style: const TextStyle(fontSize: 16),
               ),
               const SizedBox(height: 10),
@@ -240,7 +244,7 @@ class _DetailState extends State<Detail> {
                   children: [
                     const Icon(Icons.star, color: Colors.amber, size: 25),
                     Text(
-                      movie!.detail!["imdbRating"],
+                      _movie!.detail!["imdbRating"],
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 20),
                     ),
@@ -250,6 +254,8 @@ class _DetailState extends State<Detail> {
               const Icon(Icons.share)
             ]))
       ]);
+
+      // screen dpi > 325 & < 700
     } else {
       return Column(mainAxisSize: MainAxisSize.min, children: [
         // poster
@@ -261,7 +267,7 @@ class _DetailState extends State<Detail> {
               child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
                   child: Image.network(
-                    movie!.detail!["Poster"],
+                    _movie!.detail!["Poster"],
                     fit: BoxFit.contain,
                   )),
             ),
@@ -270,14 +276,14 @@ class _DetailState extends State<Detail> {
         // movie title
         Padding(
             padding: const EdgeInsets.only(top: 8, bottom: 18),
-            child: Text(movie!.detail!["Title"],
+            child: Text(_movie!.detail!["Title"],
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                     fontSize: 22, fontWeight: FontWeight.bold))),
         // genre
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: genre!.map((e) {
+          children: _genre!.map((e) {
             return ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Container(
@@ -297,7 +303,7 @@ class _DetailState extends State<Detail> {
                 children: [
                   const LikeButton(),
                   Text(
-                    movie!.detail!["Rated"],
+                    _movie!.detail!["Rated"],
                     style: const TextStyle(fontSize: 16),
                   ),
                   Row(
@@ -306,7 +312,7 @@ class _DetailState extends State<Detail> {
                       children: [
                         const Icon(Icons.star, color: Colors.amber, size: 25),
                         Text(
-                          movie!.detail!["imdbRating"],
+                          _movie!.detail!["imdbRating"],
                           style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 20),
                         ),
@@ -318,6 +324,7 @@ class _DetailState extends State<Detail> {
     }
   }
 
+  // movie description
   Scaffold content() {
     Size size = MediaQuery.of(context).size;
     double padding = 50;
@@ -354,6 +361,7 @@ class _DetailState extends State<Detail> {
                   color: const Color.fromARGB(31, 189, 189, 189),
                   padding: EdgeInsets.only(
                       left: padding, right: padding, bottom: 80, top: 35),
+                  // movie information
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -369,7 +377,7 @@ class _DetailState extends State<Detail> {
                                 child: Text(" : ",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
-                                child: Text(movie!.detail!["Released"],
+                                child: Text(_movie!.detail!["Released"],
                                     style: TextStyle(fontSize: fontSize))),
                           ]),
                       const SizedBox(height: 10),
@@ -384,7 +392,7 @@ class _DetailState extends State<Detail> {
                                 child: Text(" : ",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
-                                child: Text(movie!.detail!["Runtime"],
+                                child: Text(_movie!.detail!["Runtime"],
                                     style: TextStyle(fontSize: fontSize))),
                           ]),
                       const SizedBox(height: 10),
@@ -399,7 +407,7 @@ class _DetailState extends State<Detail> {
                                 child: Text(" : ",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
-                                child: Text(movie!.detail!["Director"],
+                                child: Text(_movie!.detail!["Director"],
                                     style: TextStyle(fontSize: fontSize))),
                           ]),
                       const SizedBox(height: 10),
@@ -414,7 +422,7 @@ class _DetailState extends State<Detail> {
                                 child: Text(" : ",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
-                                child: Text(movie!.detail!["Writer"],
+                                child: Text(_movie!.detail!["Writer"],
                                     style: TextStyle(fontSize: fontSize))),
                           ]),
                       const SizedBox(height: 10),
@@ -429,7 +437,7 @@ class _DetailState extends State<Detail> {
                                 child: Text(" : ",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
-                                child: Text(movie!.detail!["Actors"],
+                                child: Text(_movie!.detail!["Actors"],
                                     style: TextStyle(fontSize: fontSize))),
                           ]),
                       const SizedBox(height: 10),
@@ -444,7 +452,7 @@ class _DetailState extends State<Detail> {
                                 child: Text(" : ",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
-                                child: Text(movie!.detail!["Language"],
+                                child: Text(_movie!.detail!["Language"],
                                     style: TextStyle(fontSize: fontSize))),
                           ]),
                       const SizedBox(height: 10),
@@ -459,7 +467,7 @@ class _DetailState extends State<Detail> {
                                 child: Text(" : ",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
-                                child: Text(movie!.detail!["Writer"],
+                                child: Text(_movie!.detail!["Writer"],
                                     style: TextStyle(fontSize: fontSize))),
                           ]),
                       const SizedBox(height: 10),
@@ -474,7 +482,7 @@ class _DetailState extends State<Detail> {
                                 child: Text(" : ",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
-                                child: Text(movie!.detail!["Country"],
+                                child: Text(_movie!.detail!["Country"],
                                     style: TextStyle(fontSize: fontSize))),
                           ]),
                       const SizedBox(height: 10),
@@ -489,7 +497,7 @@ class _DetailState extends State<Detail> {
                                 child: Text(" : ",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
-                                child: Text(movie!.detail!["Awards"],
+                                child: Text(_movie!.detail!["Awards"],
                                     style: TextStyle(fontSize: fontSize))),
                           ])
                     ],
@@ -504,7 +512,7 @@ class _DetailState extends State<Detail> {
           maxHeight: (size.height * 0.44) - AppBar().preferredSize.height,
           minHeight: size.height * 0.03,
           panelBuilder: (controller) {
-            String plot = movie!.detail!["Plot"];
+            String plot = _movie!.detail!["Plot"];
             return SingleChildScrollView(
                 controller: controller,
                 child: Column(children: [

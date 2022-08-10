@@ -121,7 +121,7 @@ class _MobileVerState extends State<MobileVerContent> {
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                 child: Text(
                     query != null && query != ""
-                        ? "Result for $inputSearch"
+                        ? "Result for $query"
                         : "Popular Movies",
                     style: const TextStyle(
                         fontSize: 20, fontWeight: FontWeight.bold))),
@@ -260,97 +260,100 @@ class _MobileVerState extends State<MobileVerContent> {
 
   Widget searchMovies(String keyword) {
     Size size = MediaQuery.of(context).size;
-    String message = "Cari Film";
+    String message = "Searching for `$keyword`";
 
-    Movies.getMovies(keyword).then((value) {
-      setState(() {
-        searchResultMovies = value;
-      });
-    });
-
-    if (searchResultMovies != null && searchResultMovies!.movies != null) {
-      return Expanded(
-          child: GridView.count(
-              childAspectRatio: size.width >= 360 ? 0.5 : 0.7,
-              crossAxisCount: 2,
-              children: searchResultMovies!.movies!.map((e) {
-                return LayoutBuilder(builder:
-                    (BuildContext context, BoxConstraints constraints) {
-                  if (size.width < 360) {
-                    return InkWell(
-                      onTap: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => Detail(e["imdbID"])));
-                      },
-                      child: Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: Stack(children: [
-                            // poster
-                            Container(
-                                constraints: BoxConstraints(
-                                    maxHeight: constraints.maxHeight),
-                                child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(18),
-                                    child: Image.network(e["Poster"],
-                                        width: constraints.maxWidth,
-                                        height: constraints.maxHeight,
-                                        fit: BoxFit.cover))),
-                            // title
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                  e["Title"].toString().length > 33
-                                      ? "${e["Title"].toString().substring(0, 33)}..."
-                                      : e["Title"].toString(),
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15,
-                                      color: Colors.white)),
-                            )
-                          ])),
-                    );
-                  }
-                  // card
-                  return InkWell(
-                      onTap: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => Detail(e["imdbID"])));
-                      },
-                      child: Padding(
-                          padding: const EdgeInsets.only(
-                              top: 8, left: 8, right: 8, bottom: 20),
-                          child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // poster
-                                Container(
-                                    constraints: BoxConstraints(
-                                        maxHeight:
-                                            constraints.maxHeight * 0.71),
-                                    child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(18),
-                                        child: Image.network(e["Poster"],
-                                            width: constraints.maxWidth,
-                                            height:
-                                                constraints.maxHeight * 0.71,
-                                            fit: BoxFit.cover))),
-                                // title
-                                Text(
+    if (searchResultMovies != null) {
+      if (searchResultMovies!.movies != null) {
+        return Expanded(
+            child: GridView.count(
+                childAspectRatio: size.width >= 360 ? 0.5 : 0.7,
+                crossAxisCount: 2,
+                children: searchResultMovies!.movies!.map((e) {
+                  return LayoutBuilder(builder:
+                      (BuildContext context, BoxConstraints constraints) {
+                    if (size.width < 360) {
+                      return InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => Detail(e["imdbID"])));
+                        },
+                        child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Stack(children: [
+                              // poster
+                              Container(
+                                  constraints: BoxConstraints(
+                                      maxHeight: constraints.maxHeight),
+                                  child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(18),
+                                      child: Image.network(e["Poster"],
+                                          width: constraints.maxWidth,
+                                          height: constraints.maxHeight,
+                                          fit: BoxFit.cover))),
+                              // title
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
                                     e["Title"].toString().length > 33
                                         ? "${e["Title"].toString().substring(0, 33)}..."
                                         : e["Title"].toString(),
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: size.width > 480 ? 20 : 15),
-                                    textAlign: TextAlign.center),
-                                Text(e["Year"])
-                              ])));
-                });
-              }).toList()));
-    } else if (searchResultMovies != null &&
-        searchResultMovies!.error != null) {
-      message = searchResultMovies!.error!;
+                                        fontSize: 15,
+                                        color: Colors.white)),
+                              )
+                            ])),
+                      );
+                    }
+                    // card
+                    return InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => Detail(e["imdbID"])));
+                        },
+                        child: Padding(
+                            padding: const EdgeInsets.only(
+                                top: 8, left: 8, right: 8, bottom: 20),
+                            child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // poster
+                                  Container(
+                                      constraints: BoxConstraints(
+                                          maxHeight:
+                                              constraints.maxHeight * 0.71),
+                                      child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(18),
+                                          child: Image.network(e["Poster"],
+                                              width: constraints.maxWidth,
+                                              height:
+                                                  constraints.maxHeight * 0.71,
+                                              fit: BoxFit.cover))),
+                                  // title
+                                  Text(
+                                      e["Title"].toString().length > 33
+                                          ? "${e["Title"].toString().substring(0, 33)}..."
+                                          : e["Title"].toString(),
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: size.width > 480 ? 20 : 15),
+                                      textAlign: TextAlign.center),
+                                  Text(e["Year"])
+                                ])));
+                  });
+                }).toList()));
+      } else if (searchResultMovies!.error != null) {
+        message = searchResultMovies!.error!;
+      }
+    } else {
+      Movies.getMovies(keyword).then((value) {
+        setState(() {
+          searchResultMovies = value;
+        });
+      });
     }
 
     return bgMovieIcon(message);

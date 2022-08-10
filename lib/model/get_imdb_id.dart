@@ -21,7 +21,6 @@ class ImdbId {
         });
     var apiresult = await http.get(url);
     var result = convert.jsonDecode(apiresult.body) as Map<String, dynamic>;
-    print(result["imdb_id"]);
 
     return ImdbId.create(result["imdb_id"]);
   }

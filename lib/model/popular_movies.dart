@@ -32,7 +32,6 @@ class PopularMovies {
           "page": "1"
         });
     var json = await http.get(url);
-    print("getting data from themoviedb.com");
     return PopularMovies.create(json);
   }
 }

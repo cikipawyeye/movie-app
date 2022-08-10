@@ -13,10 +13,10 @@ class DesktopVer extends StatefulWidget {
 }
 
 class _DesktopVerState extends State<DesktopVer> {
-  Movies? movies;
-  PopularMovies? popularMovies;
-  String? inputSearch;
-  String? searchQuery;
+  Movies? _movies;
+  PopularMovies? _popularMovies;
+  String? _inputSearch;
+  String? _searchQuery;
 
   @override
   Widget build(BuildContext context) {
@@ -48,12 +48,12 @@ class _DesktopVerState extends State<DesktopVer> {
                     margin: const EdgeInsets.symmetric(horizontal: 20),
                     child: TextField(
                       onChanged: (String value) {
-                        inputSearch = value;
+                        _inputSearch = value;
                       },
                       onSubmitted: (String value) {
                         setState(() {
-                          movies = null;
-                          searchQuery = value;
+                          _movies = null;
+                          _searchQuery = value;
                         });
                       },
                       decoration: const InputDecoration(
@@ -77,8 +77,8 @@ class _DesktopVerState extends State<DesktopVer> {
                         splashRadius: 250,
                         onPressed: () {
                           setState(() {
-                            movies = null;
-                            searchQuery = inputSearch;
+                            _movies = null;
+                            _searchQuery = _inputSearch;
                           });
                         },
                         icon: const Icon(Icons.search)))),
@@ -87,17 +87,17 @@ class _DesktopVerState extends State<DesktopVer> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 20),
           child: Text(
-            searchQuery == "" || searchQuery == null
+            _searchQuery == "" || _searchQuery == null
                 ? "Popular Movies"
-                : "Result for $searchQuery",
+                : "Result for $_searchQuery",
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
         ),
         // content
         Builder(
           builder: (BuildContext context) {
-            if (searchQuery != null && searchQuery != "") {
-              return searchMovie(searchQuery!);
+            if (_searchQuery != null && _searchQuery != "") {
+              return searchMovie(_searchQuery!);
             } else {
               return getPopularMovies();
             }
@@ -109,21 +109,21 @@ class _DesktopVerState extends State<DesktopVer> {
 
   // search movies
   Widget searchMovie(String query) {
-    Movies.getMovies(query).then((value) {
-      setState(() {
-        movies = value;
-      });
-    });
-
-    if (movies != null) {
-      if (movies!.response == "True") {
-        return listMovies(movies!.movies!, isFromOmdb: true);
-      } else if (movies!.error != null) {
-        return bgMovieIcon(movies!.error!);
+    if (_movies != null) {
+      if (_movies!.response == "True") {
+        return listMovies(_movies!.movies!, isFromOmdb: true);
+      } else if (_movies!.error != null) {
+        return bgMovieIcon(_movies!.error!);
       } else {
         return bgMovieIcon(
             "Can`t find movie. Please check your internet connection!");
       }
+    } else {
+      Movies.getMovies(query).then((value) {
+        setState(() {
+          _movies = value;
+        });
+      });
     }
 
     return bgMovieIcon("Searching for '$query'");
@@ -131,16 +131,16 @@ class _DesktopVerState extends State<DesktopVer> {
 
   // get popular movies
   Widget getPopularMovies() {
-    if (popularMovies != null) {
-      if (popularMovies!.list != null) {
-        return listMovies(popularMovies!.list!, isFromOmdb: false);
-      } else if (popularMovies!.error != null) {
-        return bgMovieIcon(popularMovies!.error!);
+    if (_popularMovies != null) {
+      if (_popularMovies!.list != null) {
+        return listMovies(_popularMovies!.list!, isFromOmdb: false);
+      } else if (_popularMovies!.error != null) {
+        return bgMovieIcon(_popularMovies!.error!);
       }
     } else {
       PopularMovies.getPopularMovies().then((value) {
         setState(() {
-          popularMovies = value;
+          _popularMovies = value;
         });
       });
     }
