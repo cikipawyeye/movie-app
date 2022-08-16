@@ -22,6 +22,7 @@ class Movie {
   String? awards;
   bool? success;
   String? statusMessage;
+  String? imdbError;
 
   Movie({
     this.title,
@@ -44,6 +45,7 @@ class Movie {
     this.awards,
     this.success,
     this.statusMessage,
+    this.imdbError,
   });
 
   // void test() {
@@ -87,7 +89,8 @@ class Movie {
         awards: movie["Awards"],
         success: movie["success"],
         statusMessage: movie["status_message"],
-        country: movie["Country"]);
+        country: movie["Country"],
+        imdbError: movie["Error"]);
   }
 
   static Future<Movie> getMovie(int movieId) async {

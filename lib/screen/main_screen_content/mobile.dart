@@ -121,7 +121,7 @@ class _MobileVerState extends State<MobileVerContent> {
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                 child: Text(
                     query != null && query != ""
-                        ? "Result for $query"
+                        ? "Result for `$query`:"
                         : "Popular Movies",
                     style: const TextStyle(
                         fontSize: 20, fontWeight: FontWeight.bold))),
@@ -350,8 +350,8 @@ class _MobileVerState extends State<MobileVerContent> {
                                 ])));
                   });
                 }).toList()));
-      } else if (searchResultMovies!.statusMessage != null) {
-        message = searchResultMovies!.statusMessage!;
+      } else {
+        message = searchResultMovies!.statusMessage ?? message;
       }
     } else {
       Movies.getMovies(keyword).then((value) {

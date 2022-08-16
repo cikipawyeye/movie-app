@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:movie_app/helpers/youtube_player.dart';
 import 'package:movie_app/model/images.dart';
 import 'package:movie_app/model/movie.dart';
+import 'package:movie_app/model/trailers.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class Detail extends StatefulWidget {
@@ -16,6 +18,7 @@ class _DetailState extends State<Detail> {
   Movie? _movie;
   List<String>? _genre;
   Images? _images;
+  Trailers? _trailers;
   Size? size;
   double padding = 40;
   double fontSize = 14;
@@ -56,9 +59,11 @@ class _DetailState extends State<Detail> {
     if (_movie!.success != null && !_movie!.success! ||
         _movie!.imdbResponse == "False") {
       return Scaffold(
+          appBar: AppBar(title: const Text("Movie not found!")),
           body: Center(
-              child: Text(
-                  _movie!.statusMessage ?? "Error getting data. Try reload")));
+              child: Text(_movie!.statusMessage ??
+                  _movie!.imdbError ??
+                  "Error getting data. Try reload")));
     }
 
     _genre = _movie!.genres!.toString().split(", ");
@@ -82,7 +87,8 @@ class _DetailState extends State<Detail> {
               // crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 movieAttribute(),
-                movieImages(),
+                trailer(widget._idMovie),
+                movieImages(widget._idMovie),
                 Container(
                   color: const Color.fromARGB(31, 189, 189, 189),
                   padding: EdgeInsets.only(
@@ -251,10 +257,12 @@ class _DetailState extends State<Detail> {
         ),
         // dragable sliding up
         SlidingUpPanel(
+          backdropEnabled: true,
           controller: _panelController,
-          borderRadius: radius,
+          borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20), topRight: Radius.circular(20)),
           maxHeight: (size!.height * 0.44) - AppBar().preferredSize.height,
-          minHeight: size!.height * 0.03,
+          minHeight: size!.height * 0.05,
           panelBuilder: (controller) {
             String plot = _movie!.plot!;
             return SingleChildScrollView(
@@ -267,7 +275,7 @@ class _DetailState extends State<Detail> {
                           : _panelController.open();
                     },
                     child: Container(
-                      margin: const EdgeInsets.only(top: 10),
+                      margin: const EdgeInsets.only(top: 15),
                       width: 25,
                       height: 5,
                       decoration: BoxDecoration(
@@ -277,7 +285,7 @@ class _DetailState extends State<Detail> {
                   ),
                   Container(
                       padding: const EdgeInsets.symmetric(
-                          vertical: 14, horizontal: 40),
+                          vertical: 16, horizontal: 40),
                       child: Text(
                         plot,
                         textAlign: TextAlign.center,
@@ -289,9 +297,6 @@ class _DetailState extends State<Detail> {
       ]),
     );
   }
-
-  BorderRadius radius = const BorderRadius.only(
-      topLeft: Radius.circular(20), topRight: Radius.circular(20));
 
   // poster, background, rating, genre, btn like & share
   Widget movieAttribute() {
@@ -613,55 +618,108 @@ class _DetailState extends State<Detail> {
     }
   }
 
-  // images
-  Widget movieImages() {
-    if (_images != null && _images!.statusMessage == null) {
-      List<Widget> images = _images!.backdrops!.map((e) {
-        return Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Image.network(
-                "https://image.tmdb.org/t/p/w500${e["file_path"]}",
-                fit: BoxFit.cover,
-              ),
-            ));
-      }).toList();
-      if (images.length > 10) {
-        images.removeRange(10, images.length);
-      }
+  // trailers
+  Widget trailer(String idMovie) {
+    if (Theme.of(context).platform != TargetPlatform.android &&
+        Theme.of(context).platform != TargetPlatform.iOS) {
+      return Container();
+    }
+    if (_trailers != null) {
+      if (_trailers!.success!) {
+        String? videoId;
 
-      return Padding(
-        padding: EdgeInsets.symmetric(vertical: 18.0, horizontal: padding),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              child: Text("Images",
-                  style: TextStyle(
-                    fontSize: fontSize + 6,
-                    fontWeight: FontWeight.bold,
-                  )),
+        for (var element in _trailers!.result!) {
+          if (element["site"] == "YouTube" && element["type"] == "Trailer") {
+            videoId = element["key"];
+            // print(element["key"]);
+          }
+        }
+        if (videoId != null) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding:
+                      EdgeInsets.symmetric(vertical: 20, horizontal: padding),
+                  child: Text("Video",
+                      style: TextStyle(
+                        fontSize: fontSize + 6,
+                        fontWeight: FontWeight.bold,
+                      )),
+                ),
+                Container(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  constraints: const BoxConstraints(maxHeight: 230),
+                  child: YoutubeVideoPlayer(videoId),
+                ),
+              ],
             ),
-            Scrollbar(
-              controller: _controller,
-              child: Container(
-                padding: const EdgeInsets.only(bottom: 10),
-                constraints: const BoxConstraints(maxHeight: 230),
-                child: ListView(
-                  controller: _controller,
-                  scrollDirection: Axis.horizontal,
-                  children: images,
+          );
+        }
+      }
+    } else {
+      Trailers.getTrailers(int.parse(idMovie)).then((value) {
+        setState(() {
+          _trailers = value;
+        });
+      });
+    }
+    return Container();
+  }
+
+  // images
+  Widget movieImages(String idMovie) {
+    if (_images != null) {
+      if (_images!.statusMessage == null) {
+        List<Widget> images = _images!.backdrops!.map((e) {
+          return Padding(
+              padding: const EdgeInsets.only(top: 8.0, bottom: 8, right: 8),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(15),
+                child: Image.network(
+                  "https://image.tmdb.org/t/p/w500${e["file_path"]}",
+                  fit: BoxFit.cover,
+                ),
+              ));
+        }).toList();
+        if (images.length > 10) {
+          images.removeRange(10, images.length);
+        }
+
+        return Padding(
+          padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: padding),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20),
+                child: Text("Images",
+                    style: TextStyle(
+                      fontSize: fontSize + 6,
+                      fontWeight: FontWeight.bold,
+                    )),
+              ),
+              Scrollbar(
+                controller: _controller,
+                child: Container(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  constraints: BoxConstraints(maxHeight: size!.height * 0.25),
+                  child: ListView(
+                    controller: _controller,
+                    scrollDirection: Axis.horizontal,
+                    children: images,
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-      );
+            ],
+          ),
+        );
+      }
     } else {
-      Images.getImages(int.parse(widget._idMovie)).then((value) {
+      Images.getImages(int.parse(idMovie)).then((value) {
         setState(() {
           _images = value;
         });
