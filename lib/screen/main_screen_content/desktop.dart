@@ -200,8 +200,7 @@ class _DesktopVerState extends State<DesktopVer> {
                 return InkWell(
                     onTap: () {
                       Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) =>
-                              Detail(e["id"].toString(), isImdbId: false)));
+                          builder: (context) => Detail(e["id"].toString())));
                     },
                     child: Container(
                       decoration: const BoxDecoration(

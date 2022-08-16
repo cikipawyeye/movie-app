@@ -114,26 +114,6 @@ class Movie {
       var jsonImdb = await http.get(imdbUrl);
       var movieImdb = convert.jsonDecode(jsonImdb.body) as Map<String, dynamic>;
 
-      // // video
-      // Uri videosUrl = Uri(
-      //     scheme: "https",
-      //     host: "api.themoviedb.org",
-      //     path: "3/movie/$movieId/images",
-      //     queryParameters: {"apikey": "8dba5781", "language": "en-US"});
-      // var jsonVideos = await http.get(videosUrl);
-      // var movieVideos =
-      //     convert.jsonDecode(jsonVideos.body) as Map<String, dynamic>;
-
-      // // images
-      // Uri imagesUrl = Uri(
-      //     scheme: "https",
-      //     host: "api.themoviedb.org",
-      //     path: "3/movie/$movieId/images",
-      //     queryParameters: {"apikey": "8dba5781", "language": "en-US"});
-      // var jsonImages = await http.get(imagesUrl);
-      // var movieImages =
-      //     convert.jsonDecode(jsonImages.body) as Map<String, dynamic>;
-
       // merge
       movieDetail.addAll(movieImdb);
 

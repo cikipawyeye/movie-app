@@ -13,8 +13,6 @@ class PopularMovies {
 
     if (json.statusCode == 200) {
       return PopularMovies(true, list: result["results"]);
-    } else if (json.statusCode == 401 || json.statusCode == 404) {
-      return PopularMovies(false, error: result["status_message"]);
     } else {
       return PopularMovies(false,
           error: result["status_message"] ??
@@ -27,10 +25,7 @@ class PopularMovies {
         scheme: "https",
         host: "api.themoviedb.org",
         path: "/3/movie/popular",
-        queryParameters: {
-          "api_key": "895a3679182cf60867e35b87676b9257",
-          "page": "1"
-        });
+        queryParameters: {"api_key": "895a3679182cf60867e35b87676b9257"});
     var json = await http.get(url);
     return PopularMovies.create(json);
   }

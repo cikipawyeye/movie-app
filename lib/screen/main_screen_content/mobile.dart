@@ -142,7 +142,7 @@ class _MobileVerState extends State<MobileVerContent> {
     Size size = MediaQuery.of(context).size;
 
     if (popularMovies != null) {
-      if (popularMovies!.list != null) {
+      if (popularMovies!.response) {
         // list movies
         return Expanded(
             child: ListView.builder(
@@ -157,8 +157,7 @@ class _MobileVerState extends State<MobileVerContent> {
                         Navigator.push(context,
                             MaterialPageRoute(builder: (context) {
                           return Detail(
-                              popularMovies!.list![index]["id"].toString(),
-                              isImdbId: false);
+                              popularMovies!.list![index]["id"].toString());
                         }));
                       },
                       child: Container(
@@ -187,8 +186,7 @@ class _MobileVerState extends State<MobileVerContent> {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
                         return Detail(
-                            popularMovies!.list![index]["id"].toString(),
-                            isImdbId: false);
+                            popularMovies!.list![index]["id"].toString());
                       }));
                     },
                     child: Container(
