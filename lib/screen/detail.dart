@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:movie_app/model/get_imdb_id.dart';
 import 'package:movie_app/model/movie.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
@@ -19,28 +18,27 @@ class _DetailState extends State<Detail> {
 
   final PanelController _panelController = PanelController();
 
-  void getDetail(String id) {
-    Movie.getDetailMovie(id).then((value) {
-      setState(() {
-        _movie = value;
-      });
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     if (_movie == null) {
-      if (widget.isImdbId != null && !widget.isImdbId!) {
-        ImdbId.getImdbIdOf(int.parse(widget._idMovie)).then((value) {
-          getDetail(value.imdbId!);
+      Movie.getMovie(int.parse(widget._idMovie)).then((value) {
+        setState(() {
+          _movie = value;
         });
-      } else {
-        getDetail(widget._idMovie);
-      }
+      });
+
       return const Scaffold(body: Center(child: Text("Loading data...")));
     }
 
-    _genre = _movie!.detail!["Genre"].toString().split(", ");
+    if (_movie!.success != null && !_movie!.success! ||
+        _movie!.imdbResponse == "False") {
+      return Scaffold(
+          body: Center(
+              child: Text(
+                  _movie!.statusMessage ?? "Error getting data. Try reload")));
+    }
+
+    _genre = _movie!.genres!.toString().split(", ");
 
     return content();
   }
@@ -65,262 +63,321 @@ class _DetailState extends State<Detail> {
       padding = 300;
     }
 
-    // screen dpi above 700
+    // screen dpi above 700 : desktop
     if (size.width > 700) {
-      return Padding(
-        padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: padding),
-        child: Column(
-          children: [
-            // movie title
-            Padding(
-                padding: const EdgeInsets.symmetric(vertical: 18),
-                child: Text(_movie!.detail!["Title"],
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        fontSize: fontSize + 8, fontWeight: FontWeight.bold))),
-            Row(children: [
-              // poster
-              Expanded(
-                  child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Container(
-                        constraints:
-                            BoxConstraints(maxHeight: size.height * 0.5),
-                        child: Center(
-                            child: ClipRRect(
-                                borderRadius: BorderRadius.circular(20),
-                                child: Image.network(
-                                  _movie!.detail!["Poster"],
-                                  fit: BoxFit.contain,
-                                ))),
-                      ))),
-              Expanded(
-                  child: Center(
-                      child: Column(children: [
-                // rating
-                Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 18.0),
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            _movie!.detail!["Rated"],
-                            style: TextStyle(fontSize: fontSize + 2),
-                          ),
-                          const SizedBox(width: 40),
-                          Row(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.star,
-                                    color: Colors.amber, size: 25),
-                                Text(
-                                  _movie!.detail!["imdbRating"],
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: fontSize + 6),
-                                ),
-                                Text("/10",
-                                    style: TextStyle(fontSize: fontSize - 2)),
-                              ])
-                        ])),
-                // genre
-                Builder(builder: (context) {
-                  if (_genre!.length < 5) {
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: _genre!.map((e) {
-                        return Padding(
-                          padding: const EdgeInsets.all(5.0),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Container(
-                                color: Colors.black12,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(6),
-                                  child: Text(e,
-                                      style: TextStyle(
-                                          color: Colors.black,
-                                          fontSize: fontSize - 2)),
-                                )),
-                          ),
-                        );
-                      }).toList(),
-                    );
-                  } else {
-                    return Column(
-                      children: _genre!.map((e) {
-                        return Padding(
-                          padding: const EdgeInsets.all(5.0),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Container(
-                                color: Colors.black12,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(6),
-                                  child: Text(e,
-                                      style: TextStyle(
-                                          color: Colors.black,
-                                          fontSize: fontSize - 2)),
-                                )),
-                          ),
-                        );
-                      }).toList(),
-                    );
-                  }
-                }),
-                // like
-                Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 18.0),
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          LikeButton(),
-                          SizedBox(width: 22),
-                          Icon(Icons.share)
-                        ]))
-              ])))
-            ]),
-          ],
-        ),
-      );
-
-      // screen dpi under 325
-    } else if (size.width < 325) {
-      return Column(mainAxisSize: MainAxisSize.min, children: [
-        // poster
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Container(
-            constraints: BoxConstraints(maxHeight: size.height * 0.5),
-            child: Center(
-              child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: Image.network(
-                    _movie!.detail!["Poster"],
-                    fit: BoxFit.contain,
-                  )),
+      return Stack(children: [
+        // movie image
+        Container(
+          constraints: BoxConstraints(maxHeight: size.height * 0.6),
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 0, 0, 0),
+            image: DecorationImage(
+              fit: BoxFit.cover,
+              colorFilter: ColorFilter.mode(
+                  Colors.black.withOpacity(0.4), BlendMode.dstATop),
+              image: NetworkImage(
+                _movie!.backdropPath!,
+              ),
             ),
           ),
         ),
-        // movie title
+        // movie detail
         Padding(
-            padding: const EdgeInsets.only(top: 8, bottom: 18),
-            child: Text(_movie!.detail!["Title"],
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    fontSize: 22, fontWeight: FontWeight.bold))),
-        // genre
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: _genre!.map((e) {
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                    color: Colors.black12,
+          padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: padding),
+          child: Column(
+            children: [
+              // movie title
+              Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  child: Text(_movie!.title!,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: fontSize + 8,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold))),
+              Row(children: [
+                // poster
+                Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.all(6),
-                      child:
-                          Text(e, style: const TextStyle(color: Colors.black)),
-                    )),
-              ),
-            );
-          }).toList(),
+                        padding: const EdgeInsets.all(8.0),
+                        child: Container(
+                          constraints:
+                              BoxConstraints(maxHeight: size.height * 0.5),
+                          child: Center(
+                              child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Image.network(
+                                    _movie!.posterPath!,
+                                    fit: BoxFit.contain,
+                                  ))),
+                        ))),
+                Expanded(
+                    child: Center(
+                        child: Column(children: [
+                  // rating
+                  Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 18.0),
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              _movie!.rated!,
+                              style: TextStyle(
+                                  color: Colors.white, fontSize: fontSize + 2),
+                            ),
+                            const SizedBox(width: 40),
+                            Row(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.star,
+                                      color: Colors.amber, size: 25),
+                                  Text(
+                                    _movie!.imdbRating!,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                        fontSize: fontSize + 6),
+                                  ),
+                                  Text("/10",
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: fontSize - 2)),
+                                ])
+                          ])),
+                  // genre
+                  Builder(builder: (context) {
+                    if (_genre!.length < 5) {
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: _genre!.map((e) {
+                          return Padding(
+                            padding: const EdgeInsets.all(5.0),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                  color:
+                                      const Color.fromARGB(255, 241, 240, 240),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(6),
+                                    child: Text(e,
+                                        style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: fontSize - 2)),
+                                  )),
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    } else {
+                      return Column(
+                        children: _genre!.map((e) {
+                          return Padding(
+                            padding: const EdgeInsets.all(5.0),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                  color:
+                                      const Color.fromARGB(255, 241, 240, 240),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(6),
+                                    child: Text(e,
+                                        style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: fontSize - 2)),
+                                  )),
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    }
+                  }),
+                  // like
+                  Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 18.0),
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            LikeButton(),
+                            SizedBox(width: 22),
+                            Icon(
+                              Icons.share,
+                              color: Color.fromARGB(255, 183, 183, 183),
+                            )
+                          ]))
+                ])))
+              ]),
+            ],
+          ),
         ),
-        // rating
-        Padding(
-            padding: const EdgeInsets.symmetric(vertical: 18.0),
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
-              Text(
-                _movie!.detail!["Rated"],
-                style: const TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.star, color: Colors.amber, size: 25),
-                    Text(
-                      _movie!.detail!["imdbRating"],
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 20),
-                    ),
-                    const Text("/10"),
-                  ]),
-              const LikeButton(),
-              const Icon(Icons.share)
-            ]))
       ]);
 
-      // screen dpi > 325 & < 700
-    } else {
-      return Column(mainAxisSize: MainAxisSize.min, children: [
-        // poster
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Container(
-            constraints: BoxConstraints(maxHeight: size.height * 0.5),
-            child: Center(
-              child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: Image.network(
-                    _movie!.detail!["Poster"],
-                    fit: BoxFit.contain,
-                  )),
-            ),
-          ),
-        ),
-        // movie title
-        Padding(
-            padding: const EdgeInsets.only(top: 8, bottom: 18),
-            child: Text(_movie!.detail!["Title"],
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    fontSize: 22, fontWeight: FontWeight.bold))),
-        // genre
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: _genre!.map((e) {
-            return ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+      // screen dpi under 325 : mini mobile/desktop
+    } else if (size.width < 325) {
+      return Column(
+        children: [
+          Column(mainAxisSize: MainAxisSize.min, children: [
+            // poster
+            Padding(
+              padding: const EdgeInsets.all(8.0),
               child: Container(
-                  color: Colors.black12,
-                  child: Padding(
-                    padding: const EdgeInsets.all(6),
-                    child: Text(e, style: const TextStyle(color: Colors.black)),
-                  )),
-            );
-          }).toList(),
-        ),
-        // rating
-        Padding(
-            padding: const EdgeInsets.symmetric(vertical: 18.0),
-            child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  const LikeButton(),
+                constraints: BoxConstraints(maxHeight: size.height * 0.5),
+                child: Center(
+                  child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Image.network(
+                        _movie!.posterPath!,
+                        fit: BoxFit.contain,
+                      )),
+                ),
+              ),
+            ),
+            // movie title
+            Padding(
+                padding: const EdgeInsets.only(top: 8, bottom: 18),
+                child: Text(_movie!.title!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        fontSize: 22, fontWeight: FontWeight.bold))),
+            // genre
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: _genre!.map((e) {
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                        color: Colors.black12,
+                        child: Padding(
+                          padding: const EdgeInsets.all(6),
+                          child: Text(e,
+                              style: const TextStyle(color: Colors.black)),
+                        )),
+                  ),
+                );
+              }).toList(),
+            ),
+            // rating
+            Padding(
+                padding: const EdgeInsets.symmetric(vertical: 18.0),
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
                   Text(
-                    _movie!.detail!["Rated"],
+                    _movie!.rated!,
                     style: const TextStyle(fontSize: 16),
                   ),
+                  const SizedBox(height: 10),
                   Row(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         const Icon(Icons.star, color: Colors.amber, size: 25),
                         Text(
-                          _movie!.detail!["imdbRating"],
+                          _movie!.imdbRating!,
                           style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 20),
                         ),
                         const Text("/10"),
                       ]),
-                  const Icon(Icons.share)
+                  const LikeButton(),
+                  const Icon(Icons.share,
+                      color: Color.fromARGB(255, 183, 183, 183))
                 ]))
-      ]);
+          ]),
+        ],
+      );
+
+      // screen dpi > 325 & < 700 : mobile
+    } else {
+      return Stack(
+        children: [
+          // movie backdrop image
+          Container(
+            constraints: BoxConstraints(maxHeight: size.height * 0.55),
+            decoration: BoxDecoration(
+              color: const Color.fromARGB(255, 0, 0, 0),
+              image: DecorationImage(
+                fit: BoxFit.cover,
+                colorFilter: ColorFilter.mode(
+                    Colors.black.withOpacity(0.4), BlendMode.dstATop),
+                image: NetworkImage(
+                  _movie!.backdropPath!,
+                ),
+              ),
+            ),
+          ),
+          Column(mainAxisSize: MainAxisSize.min, children: [
+            // poster
+            Padding(
+              padding: const EdgeInsets.only(
+                  bottom: 8.0, left: 8.0, right: 8.0, top: 70),
+              child: Container(
+                constraints: BoxConstraints(maxHeight: size.height * 0.5),
+                child: Center(
+                  child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Image.network(
+                        _movie!.posterPath!,
+                        fit: BoxFit.contain,
+                      )),
+                ),
+              ),
+            ),
+            // movie title
+            Padding(
+                padding: const EdgeInsets.only(top: 8, bottom: 18),
+                child: Text(_movie!.title!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        fontSize: 22, fontWeight: FontWeight.bold))),
+            // genre
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: _genre!.map((e) {
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                      color: Colors.black12,
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Text(e,
+                            style: const TextStyle(color: Colors.black)),
+                      )),
+                );
+              }).toList(),
+            ),
+            // rating
+            Padding(
+                padding: const EdgeInsets.symmetric(vertical: 18.0),
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      const LikeButton(),
+                      Text(
+                        _movie!.rated!,
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      Row(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.star,
+                                color: Colors.amber, size: 25),
+                            Text(
+                              _movie!.imdbRating!,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 20),
+                            ),
+                            const Text("/10"),
+                          ]),
+                      const Icon(
+                        Icons.share,
+                        color: Color.fromARGB(255, 183, 183, 183),
+                      )
+                    ]))
+          ]),
+        ],
+      );
     }
   }
 
@@ -351,6 +408,7 @@ class _DetailState extends State<Detail> {
         elevation: 0,
       ),
       body: Stack(children: [
+        // movie information
         Container(
           padding: const EdgeInsets.all(0),
           child: ListView(
@@ -371,13 +429,15 @@ class _DetailState extends State<Detail> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
+                                flex: 2,
                                 child: Text("Released",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
                                 child: Text(" : ",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
-                                child: Text(_movie!.detail!["Released"],
+                                flex: 4,
+                                child: Text(_movie!.releaseDate!,
                                     style: TextStyle(fontSize: fontSize))),
                           ]),
                       const SizedBox(height: 10),
@@ -386,13 +446,15 @@ class _DetailState extends State<Detail> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
+                                flex: 2,
                                 child: Text("Runtime",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
                                 child: Text(" : ",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
-                                child: Text(_movie!.detail!["Runtime"],
+                                flex: 4,
+                                child: Text(_movie!.runtime!,
                                     style: TextStyle(fontSize: fontSize))),
                           ]),
                       const SizedBox(height: 10),
@@ -401,13 +463,15 @@ class _DetailState extends State<Detail> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
+                                flex: 2,
                                 child: Text("Director",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
                                 child: Text(" : ",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
-                                child: Text(_movie!.detail!["Director"],
+                                flex: 4,
+                                child: Text(_movie!.director!,
                                     style: TextStyle(fontSize: fontSize))),
                           ]),
                       const SizedBox(height: 10),
@@ -416,13 +480,15 @@ class _DetailState extends State<Detail> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
+                                flex: 2,
                                 child: Text("Writer",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
                                 child: Text(" : ",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
-                                child: Text(_movie!.detail!["Writer"],
+                                flex: 4,
+                                child: Text(_movie!.writer!,
                                     style: TextStyle(fontSize: fontSize))),
                           ]),
                       const SizedBox(height: 10),
@@ -431,13 +497,15 @@ class _DetailState extends State<Detail> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
+                                flex: 2,
                                 child: Text("Actors",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
                                 child: Text(" : ",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
-                                child: Text(_movie!.detail!["Actors"],
+                                flex: 4,
+                                child: Text(_movie!.actor!,
                                     style: TextStyle(fontSize: fontSize))),
                           ]),
                       const SizedBox(height: 10),
@@ -446,13 +514,15 @@ class _DetailState extends State<Detail> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
+                                flex: 2,
                                 child: Text("Language",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
                                 child: Text(" : ",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
-                                child: Text(_movie!.detail!["Language"],
+                                flex: 4,
+                                child: Text(_movie!.language!,
                                     style: TextStyle(fontSize: fontSize))),
                           ]),
                       const SizedBox(height: 10),
@@ -461,13 +531,15 @@ class _DetailState extends State<Detail> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
+                                flex: 2,
                                 child: Text("Writer",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
                                 child: Text(" : ",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
-                                child: Text(_movie!.detail!["Writer"],
+                                flex: 4,
+                                child: Text(_movie!.writer!,
                                     style: TextStyle(fontSize: fontSize))),
                           ]),
                       const SizedBox(height: 10),
@@ -476,13 +548,15 @@ class _DetailState extends State<Detail> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
+                                flex: 2,
                                 child: Text("Country",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
                                 child: Text(" : ",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
-                                child: Text(_movie!.detail!["Country"],
+                                flex: 4,
+                                child: Text(_movie!.country!,
                                     style: TextStyle(fontSize: fontSize))),
                           ]),
                       const SizedBox(height: 10),
@@ -491,13 +565,15 @@ class _DetailState extends State<Detail> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
+                                flex: 2,
                                 child: Text("Awards",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
                                 child: Text(" : ",
                                     style: TextStyle(fontSize: fontSize))),
                             Expanded(
-                                child: Text(_movie!.detail!["Awards"],
+                                flex: 4,
+                                child: Text(_movie!.awards!,
                                     style: TextStyle(fontSize: fontSize))),
                           ])
                     ],
@@ -512,7 +588,7 @@ class _DetailState extends State<Detail> {
           maxHeight: (size.height * 0.44) - AppBar().preferredSize.height,
           minHeight: size.height * 0.03,
           panelBuilder: (controller) {
-            String plot = _movie!.detail!["Plot"];
+            String plot = _movie!.plot!;
             return SingleChildScrollView(
                 controller: controller,
                 child: Column(children: [
@@ -565,6 +641,7 @@ class _LikeButtonState extends State<LikeButton> {
   Widget build(BuildContext context) {
     return Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
       IconButton(
+          color: const Color.fromARGB(255, 183, 183, 183),
           onPressed: () {
             setState(() {
               isLiked = !isLiked;
@@ -577,6 +654,7 @@ class _LikeButtonState extends State<LikeButton> {
           icon: Icon(isLiked ? Icons.thumb_up : Icons.thumb_up_outlined)),
       const SizedBox(width: 20),
       IconButton(
+          color: const Color.fromARGB(255, 183, 183, 183),
           onPressed: () {
             setState(() {
               isDisliked = !isDisliked;

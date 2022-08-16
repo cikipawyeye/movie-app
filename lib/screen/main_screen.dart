@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:movie_app/screen/content/main_screen_desktop.dart';
-import 'package:movie_app/screen/content/main_screen_mobile.dart';
+import 'package:movie_app/screen/main_screen_content/desktop.dart';
+import 'package:movie_app/screen/main_screen_content/mobile.dart';
 
 class MyHomePage extends StatelessWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);

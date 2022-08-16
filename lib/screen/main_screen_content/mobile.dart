@@ -1,6 +1,6 @@
 // mobile version
 import 'package:flutter/material.dart';
-import 'package:movie_app/model/movie_list.dart';
+import 'package:movie_app/model/movies.dart';
 import 'package:movie_app/model/popular_movies.dart';
 import 'package:movie_app/screen/detail.dart';
 import 'package:movie_app/screen/main_screen.dart';
@@ -263,19 +263,21 @@ class _MobileVerState extends State<MobileVerContent> {
     String message = "Searching for `$keyword`";
 
     if (searchResultMovies != null) {
-      if (searchResultMovies!.movies != null) {
+      if (searchResultMovies!.result != null) {
         return Expanded(
             child: GridView.count(
                 childAspectRatio: size.width >= 360 ? 0.5 : 0.7,
                 crossAxisCount: 2,
-                children: searchResultMovies!.movies!.map((e) {
+                children: searchResultMovies!.result!.map((e) {
                   return LayoutBuilder(builder:
                       (BuildContext context, BoxConstraints constraints) {
+                    // dpi under 360 :: very small screen
                     if (size.width < 360) {
                       return InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => Detail(e["imdbID"])));
+                              builder: (context) =>
+                                  Detail(e["id"].toString())));
                         },
                         child: Padding(
                             padding: const EdgeInsets.all(8),
@@ -286,7 +288,8 @@ class _MobileVerState extends State<MobileVerContent> {
                                       maxHeight: constraints.maxHeight),
                                   child: ClipRRect(
                                       borderRadius: BorderRadius.circular(18),
-                                      child: Image.network(e["Poster"],
+                                      child: Image.network(
+                                          "https://image.tmdb.org/t/p/w500${e["poster_path"]}",
                                           width: constraints.maxWidth,
                                           height: constraints.maxHeight,
                                           fit: BoxFit.cover))),
@@ -294,9 +297,9 @@ class _MobileVerState extends State<MobileVerContent> {
                               Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Text(
-                                    e["Title"].toString().length > 33
-                                        ? "${e["Title"].toString().substring(0, 33)}..."
-                                        : e["Title"].toString(),
+                                    e["original_title"].toString().length > 33
+                                        ? "${e["original_title"].toString().substring(0, 33)}..."
+                                        : e["original_title"].toString(),
                                     style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 15,
@@ -305,11 +308,12 @@ class _MobileVerState extends State<MobileVerContent> {
                             ])),
                       );
                     }
-                    // card
+                    // dpi >= 360
                     return InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => Detail(e["imdbID"])));
+                              builder: (context) =>
+                                  Detail(e["id"].toString())));
                         },
                         child: Padding(
                             padding: const EdgeInsets.only(
@@ -327,26 +331,29 @@ class _MobileVerState extends State<MobileVerContent> {
                                       child: ClipRRect(
                                           borderRadius:
                                               BorderRadius.circular(18),
-                                          child: Image.network(e["Poster"],
+                                          child: Image.network(
+                                              "https://image.tmdb.org/t/p/w500${e["poster_path"]}",
                                               width: constraints.maxWidth,
                                               height:
                                                   constraints.maxHeight * 0.71,
                                               fit: BoxFit.cover))),
                                   // title
                                   Text(
-                                      e["Title"].toString().length > 33
-                                          ? "${e["Title"].toString().substring(0, 33)}..."
-                                          : e["Title"].toString(),
+                                      e["original_title"].toString().length > 33
+                                          ? "${e["original_title"].toString().substring(0, 33)}..."
+                                          : e["original_title"].toString(),
                                       style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: size.width > 480 ? 20 : 15),
                                       textAlign: TextAlign.center),
-                                  Text(e["Year"])
+                                  Text(e["release_date"]
+                                      .toString()
+                                      .substring(0, 4))
                                 ])));
                   });
                 }).toList()));
-      } else if (searchResultMovies!.error != null) {
-        message = searchResultMovies!.error!;
+      } else if (searchResultMovies!.statusMessage != null) {
+        message = searchResultMovies!.statusMessage!;
       }
     } else {
       Movies.getMovies(keyword).then((value) {

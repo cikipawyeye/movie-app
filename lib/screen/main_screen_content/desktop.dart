@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:movie_app/model/movie_list.dart';
+import 'package:movie_app/model/movies.dart';
 import 'package:movie_app/model/popular_movies.dart';
 import 'package:movie_app/screen/detail.dart';
 import 'package:movie_app/screen/main_screen.dart';
@@ -89,7 +89,7 @@ class _DesktopVerState extends State<DesktopVer> {
           child: Text(
             _searchQuery == "" || _searchQuery == null
                 ? "Popular Movies"
-                : "Result for $_searchQuery",
+                : "Result for `$_searchQuery`",
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
         ),
@@ -110,10 +110,10 @@ class _DesktopVerState extends State<DesktopVer> {
   // search movies
   Widget searchMovie(String query) {
     if (_movies != null) {
-      if (_movies!.response == "True") {
-        return listMovies(_movies!.movies!, isFromOmdb: true);
-      } else if (_movies!.error != null) {
-        return bgMovieIcon(_movies!.error!);
+      if (_movies!.success!) {
+        return listMovies(_movies!.result!, isFromOmdb: true);
+      } else if (_movies!.statusMessage != null) {
+        return bgMovieIcon(_movies!.statusMessage!);
       } else {
         return bgMovieIcon(
             "Can`t find movie. Please check your internet connection!");
@@ -200,9 +200,8 @@ class _DesktopVerState extends State<DesktopVer> {
                 return InkWell(
                     onTap: () {
                       Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => Detail(
-                              e[isFromOmdb ? "imdbID" : "id"].toString(),
-                              isImdbId: isFromOmdb)));
+                          builder: (context) =>
+                              Detail(e["id"].toString(), isImdbId: false)));
                     },
                     child: Container(
                       decoration: const BoxDecoration(
