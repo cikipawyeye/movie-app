@@ -1,3 +1,4 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
 
@@ -101,7 +102,7 @@ class Movie {
           host: "api.themoviedb.org",
           path: "3/movie/$movieId",
           queryParameters: {
-            "api_key": "895a3679182cf60867e35b87676b9257",
+            "api_key": dotenv.env["API_KEY"],
             "language": "en-US"
           });
       var jsonDetail = await http.get(detailUrl);
@@ -110,7 +111,7 @@ class Movie {
 
       // imdb
       Uri imdbUrl = Uri(scheme: "http", host: "omdbapi.com", queryParameters: {
-        "apikey": "8dba5781",
+        "apikey": dotenv.env["OMDB_API_KEY"],
         "plot": "full",
         "i": movieDetail["imdb_id"]
       });

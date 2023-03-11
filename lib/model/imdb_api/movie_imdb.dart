@@ -1,4 +1,5 @@
 import 'dart:convert' as convert;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 class Movie {
@@ -15,7 +16,7 @@ class Movie {
     Uri url = Uri(
         scheme: "http",
         host: "omdbapi.com",
-        queryParameters: {"apikey": "8dba5781", "plot": "full", "i": imdbID});
+        queryParameters: {"apikey": dotenv.env["OMDB_API_KEY"], "plot": "full", "i": imdbID});
     var apiresult = await http.get(url);
 
     return Movie.create(apiresult);

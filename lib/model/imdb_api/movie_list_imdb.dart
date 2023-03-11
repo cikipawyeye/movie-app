@@ -1,4 +1,5 @@
 import 'dart:convert' as convert;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 class Movies {
@@ -19,7 +20,7 @@ class Movies {
     Uri url = Uri(
         scheme: "http",
         host: "omdbapi.com",
-        queryParameters: {"apikey": "8dba5781", "s": keyword});
+        queryParameters: {"apikey": dotenv.env["OMDB_API_KEY"], "s": keyword});
 
     var apiresult = await http.get(url);
     var jsonObject = convert.jsonDecode(apiresult.body) as Map<String, dynamic>;

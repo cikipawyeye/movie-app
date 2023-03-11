@@ -1,3 +1,4 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
 
@@ -26,7 +27,7 @@ class Images {
         host: "api.themoviedb.org",
         path: "3/movie/$id/images",
         queryParameters: {
-          "api_key": "895a3679182cf60867e35b87676b9257",
+          "api_key": dotenv.env["API_KEY"]
         });
 
     try {

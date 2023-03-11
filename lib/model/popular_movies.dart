@@ -1,4 +1,5 @@
 import 'dart:convert' as convert;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 class PopularMovies {
@@ -25,7 +26,7 @@ class PopularMovies {
         scheme: "https",
         host: "api.themoviedb.org",
         path: "/3/movie/popular",
-        queryParameters: {"api_key": "895a3679182cf60867e35b87676b9257"});
+        queryParameters: {"api_key": dotenv.env["API_KEY"]});
     var json = await http.get(url);
     return PopularMovies.create(json);
   }
